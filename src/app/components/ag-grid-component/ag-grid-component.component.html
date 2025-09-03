@@ -1,0 +1,15 @@
+
+<ag-grid-angular class="grid-wrapper" *ngIf="isBrowser"
+style = "width: 100%; height:350px"
+class="ag-theme-quartz"
+[rowData]="journeys"
+[columnDefs]="columnDefs"
+[getRowId]="getRowId"
+(gridReady)="onGridReady($event)"
+[pagination]="true"
+[paginationPageSize]="5"
+[domLayout]="'autoHeight'"
+[animateRows]="true"
+[defaultColDef]="defaultColDef"
+>
+</ag-grid-angular>

@@ -8,6 +8,9 @@ button[type="submit"] {
     cursor: pointer;
     transition: background-color 0.3s, transform 0.1s;
 }
+button[type="submit"]:hover {
+    background-color: #0056b3;
+}
 
 button[type="submit"]:hover {
     background-color: #0056b3;
@@ -21,6 +24,27 @@ button[type="submit"]:active {
     margin-top: 20px;
 }
 
+/* .add-journey-btn {
+    background-color: #2563eb;
+    color: white !important;
+    width: 60%;
+    padding: 10px 16px;
+    padding-left: 10px;
+    border-radius: 10px;
+    border: 10px;
+    
+  }
+  
+  .add-journey-btn:hover:not(:disabled) {
+    background-color: #1d4ed8;
+  }
+  
+  .add-journey-btn:disabled {
+    background-color: #9ca3af ;
+    cursor: not-allowed;
+  } */
+
+
 form {
     background-color: #ffffff;
     padding: 25px;
@@ -33,11 +57,6 @@ form {
     align-items: center;
 }
 
-label {
-    font-weight: bold;
-    color: #555;
-    margin-right: 10px;
-}
 
 select {
     padding: 10px;

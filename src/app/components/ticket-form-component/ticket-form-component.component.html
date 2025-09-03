@@ -1,0 +1,45 @@
+<form [formGroup]="zoneForm">
+    <label for="fromZone">From</label>
+    <select id="fromZone" formControlName="fromZone">
+      <option *ngFor="let zone of zones" [value]="zone.value">{{ zone.label }}</option>
+    </select>
+  
+    <label for="toZone">To</label>
+    <select id="toZone" formControlName="toZone">
+      <option *ngFor="let zone of zones" [value]="zone.value">{{ zone.label }}</option>
+    </select>
+  
+    <button (click)="addJourney()"
+        [disabled]="journeys.length >= 20"
+        class="w-3/5 ml-auto bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring focus:ring-indigo-200 transition-colors"> Add Ticket</button>
+  </form>
+ 
+
+  <div class="warning-card" *ngIf="journeys.length >= 20">
+    <div class="warning-card-header">
+      <div class="warning-badge">!</div>
+      <h3 class="warning-card-title">Action Required</h3>
+    </div>
+    <div class="warning-card-body">
+      <p class="warning-card-text">
+        You've reached the maximum limit of 20 tickets.
+      </p>
+      <ul class="warning-suggestions">
+        <li>Remove existing tickets</li>
+        <li>Or find out current total</li>
+      </ul>
+    </div>
+  </div>
+
+
+<app-ag-grid-component
+[journeys]="journeys"
+(totalFare)="handleTotalFare($event)"
+(journeysChange)="onJourneysChange($event)">
+></app-ag-grid-component>
+
+<div style="text-align: right; margin-top: 1px; margin-right: 30px;">
+    <strong>Total Fare: {{ totalFare }}</strong>
+</div>  
+
+  
