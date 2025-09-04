@@ -1,13 +1,5 @@
-import { Component, Inject, PLATFORM_ID, ViewChild } from '@angular/core';
+import { Component, Inject, OnInit, PLATFORM_ID, ViewChild } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { FormBuilder, FormGroup , ReactiveFormsModule, Validators} from '@angular/forms';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
-import { MatTableDataSource } from '@angular/material/table';
-import { JourneyService } from './services/journey.service';
-import { Journey, JourneyResponse } from './models/journey';
-import { AgGridAngular, AgGridModule } from 'ag-grid-angular';
-import { ChangeDetectorRef } from '@angular/core';
 import { TicketFormComponentComponent } from "./components/ticket-form-component/ticket-form-component.component";
 
 @Component({
@@ -16,7 +8,19 @@ import { TicketFormComponentComponent } from "./components/ticket-form-component
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
+  userId:string = '';
+  ngOnInit(): void {
+
+    let storedId = sessionStorage.getItem('userId');
+   
+    if (!storedId) {
+      this.userId = crypto.randomUUID();
+      sessionStorage.setItem('userId', this.userId);
+    } else {
+      this.userId = storedId;
+    }
+  }
   title = 'PearlCard-UI';
 
   

@@ -1,7 +1,7 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ApiResponse, Journey, JourneyResponse } from '../models/journey';
+import { ApiResponse, DeleteRequest, Journey, JourneyRequest } from '../models/journey';
 
 
 
@@ -14,16 +14,26 @@ export class JourneyService {
 
   constructor(private http:HttpClient) { 
 
-
   }
 
-  calculateTotalFare(journeys: Journey[] ) : Observable<ApiResponse<JourneyResponse>> {
-    const payload = {journeys};
-    return this.http.post<ApiResponse<JourneyResponse>>(`${this.apiUrl}/calculateTotalFare`, payload);
+  calculateTotalFare(journeyRequest: JourneyRequest ) : Observable<ApiResponse<any>> {
+    //const payload = {journeyRequest};
+    // In your Angular service
+      const headers = new HttpHeaders({
+        'Content-Type': 'application/json'
+      });
+      console.log('Sending payload:', JSON.stringify(journeyRequest));
+
+    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/calculateTotalFare`, journeyRequest, {headers});
+  }
+
+  deleteJourney(deleteRequest:DeleteRequest): Observable<any> {
+    const payload = {
+      body:deleteRequest
+    }
+    return this.http.delete(`${this.apiUrl}/journeys`, payload);
   }
 
 
-  deleteJourney(id:number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/journeys/${id}`);
-  }
+  
 }

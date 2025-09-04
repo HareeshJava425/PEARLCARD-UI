@@ -1,22 +1,38 @@
 export interface Journey {
-    id: number;
-    fromZone: string;
-    toZone: string;
-    fare: number;
-  }
+  journeyId: number;
+  fromZone: number;
+  toZone: number;
+  fromStation: string;
+  toStation: string;
+  userId: string;
+  fare: number;
+  timestamp: string;
+}
   
-  export interface JourneyResponse {
-    journeyDetails: Journey[];
-    totalFare: number;
-  }
-  
-  export interface JourneyRequest {
-    journeys: Journey[];
+export interface JourneyRequest {
+  userId: string;
+  journeys: JourneyRequestItem[];
+}
+
+export interface JourneyRequestItem {
+  fromStation: string;
+  toStation: string;
+}
+  export interface DeleteRequest {
+    userId: string;
+    journeyId:number;
   }
   export interface ApiResponse<T> {
     success: boolean;
     message: string;
-    data: JourneyResponse;
-    timestamp:string;
+    timestamp: string;
+    data: FareCalculationResponse;
+    errors: any | null;
+  }
+
+  export interface FareCalculationResponse {
+    journeys: Journey[];
+    totalFare: number;
+    totalJourneys: number;
   }
   

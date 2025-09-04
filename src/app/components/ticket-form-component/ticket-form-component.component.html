@@ -1,13 +1,13 @@
-<form [formGroup]="zoneForm">
-    <label for="fromZone">From</label>
-    <select id="fromZone" formControlName="fromZone">
-      <option *ngFor="let zone of zones" [value]="zone.value">{{ zone.label }}</option>
-    </select>
-  
-    <label for="toZone">To</label>
-    <select id="toZone" formControlName="toZone">
-      <option *ngFor="let zone of zones" [value]="zone.value">{{ zone.label }}</option>
-    </select>
+<form [formGroup]="stationForm">
+  <label for="fromStation">From</label>
+  <select id="fromStation" formControlName="fromStation">
+    <option *ngFor="let station of stations" [value]="station">{{ station }}</option>
+  </select>
+
+  <label for="toStation">To</label>
+  <select id="toStation" formControlName="toStation">
+    <option *ngFor="let station of stations" [value]="station">{{ station }}</option>
+  </select>
   
     <button (click)="addJourney()"
         [disabled]="journeys.length >= 20"

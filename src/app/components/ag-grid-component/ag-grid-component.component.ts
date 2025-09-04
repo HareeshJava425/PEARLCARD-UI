@@ -1,7 +1,7 @@
 import { Component, Input, Output , EventEmitter, SimpleChanges, PLATFORM_ID, Inject, ViewChild, ElementRef, ChangeDetectionStrategy, ChangeDetectorRef, NgZone} from '@angular/core';
 import {AgGridModule} from 'ag-grid-angular';
-import { ApiResponse, Journey, JourneyResponse } from '../../models/journey';
-import { ColDef, GridApi, GridReadyEvent, ICellRendererParams } from 'ag-grid-community';
+import { ApiResponse, DeleteRequest, FareCalculationResponse, Journey } from '../../models/journey';
+import { ColDef, GetRowIdParams, GridApi, GridReadyEvent, ICellRendererParams } from 'ag-grid-community';
 import { JourneyService } from '../../services/journey.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 
@@ -47,13 +47,6 @@ export class AgGridComponentComponent {
       this.gridApi.setGridOption('rowData', this.journeys);
     }
   }
-
-
-  zones = [
-    { label: 'Zone 1', value: "1" },
-    { label: 'Zone 2', value: "2" },
-    { label: 'Zone 3', value: "3" }
-    ];
 
   //@Input() colDefs:ColDef[] = [];
 
@@ -128,7 +121,7 @@ export class AgGridComponentComponent {
         columnDefs: ColDef<Journey>[] = [
           {
             headerName: 'No',
-            field: 'id',
+            field: 'journeyId',
             width: 80,
             pinned: 'left',
             cellStyle: { 
@@ -139,18 +132,34 @@ export class AgGridComponentComponent {
           },
           {
             headerName: 'Departure',
-            field: 'fromZone',
+            field: 'fromStation',
             flex: 1,
             minWidth: 120,
-            valueFormatter: (params) => this.zoneFormatter(params),
+           // valueFormatter: (params) => this.zoneFormatter(params),
             cellStyle: { fontWeight: '500' }
           },
           {
             headerName: 'Arrival',
+            field: 'toStation',
+            flex: 1,
+            minWidth: 120,
+            //valueFormatter: (params) => this.zoneFormatter(params),
+            cellStyle: { fontWeight: '500' }
+          },
+          {
+            headerName: 'Zone(From)',
+            field: 'fromZone',
+            flex: 1,
+            minWidth: 120,
+           // valueFormatter: (params) => this.zoneFormatter(params),
+            cellStyle: { fontWeight: '500' }
+          },
+          {
+            headerName: 'Zone(To)',
             field: 'toZone',
             flex: 1,
             minWidth: 120,
-            valueFormatter: (params) => this.zoneFormatter(params),
+            //valueFormatter: (params) => this.zoneFormatter(params),
             cellStyle: { fontWeight: '500' }
           },
           {
@@ -196,8 +205,9 @@ export class AgGridComponentComponent {
               
               button.addEventListener('click', (event) => {
                 event.stopPropagation();
-                if (params.data && params.data.id !== undefined) {
-                  this.onDeleteJourney(params.data.id);
+                if (params.data && params.data.journeyId !== undefined) {
+                  console.log("params.data.id", params.data.journeyId);
+                  this.onDeleteJourney(params.data.journeyId);
                 }
               });
               
@@ -211,8 +221,9 @@ export class AgGridComponentComponent {
           filter: true,
           resizable: true
         };
-        getRowId = (params: any) => {
-          return params.data.id.toString();
+        getRowId = (params: GetRowIdParams) => {
+          console.log("params.data.id", params.data.journeyId);
+          return params.data.journeyId;
         };
         gridOptions = {
           animateRows: true, // Smooth animations for row operations
@@ -222,25 +233,27 @@ export class AgGridComponentComponent {
           onGridReady: (params: GridReadyEvent) => this.onGridReady(params)
         };
 
-       
-        zoneFormatter(params: any) {
-          const zone = this.zones.find(z => z.value === params.value);
-          return zone ? zone.label : '';
-        }
-      
-
-        onDeleteJourney(id: number) {
-          this.journeyService.deleteJourney(id).subscribe({
-            next: (response: ApiResponse<JourneyResponse>) => {
+        onDeleteJourney(journeyId: number) {
+          if (!this.isBrowser) {
+            console.warn('Cannot access sessionStorage in SSR');
+            return;
+          }
+          
+          const userId: string | null = sessionStorage.getItem("userId");
+          if (userId) { // This check ensures userId is not null
+            const deleteRequest: DeleteRequest = {
+              userId: "USER123", // Now TypeScript knows userId is a string
+              journeyId: journeyId
+            };
+            // Send the request
+          this.journeyService.deleteJourney(deleteRequest).subscribe({
+            next: (response: ApiResponse<FareCalculationResponse>) => {
 
               if(response.success) {
-              const journeyToDeleteFromGrid = this.journeys.find(j => j.id === id);
+              const journeyToDeleteFromGrid = this.journeys.find(j => j.journeyId === journeyId);
               if (journeyToDeleteFromGrid) {
                 // Remove from AG Grid
                 this.gridApi.applyTransaction({ remove: [journeyToDeleteFromGrid] });
-
-                this.journeys = [...response.data.journeyDetails];
-
                 console.log('Grid data after delete:', this.journeys);
                 //console.log('Journeys after delete:', this.journeys);
                 const newTotal = this.journeys.reduce((sum, j) => sum + (j.fare || 0), 0);
@@ -248,10 +261,9 @@ export class AgGridComponentComponent {
                 console.log('New total fare:', newTotal);
                 console.log('Delete operation completed successfully');
                 this.ngZone.run(() => {
-                  this.journeysChange.emit([...this.journeys]);
+                  this.journeysChange.emit([...response.data.journeys]);
                   this.totalFare.emit(response.data.totalFare);
                 });
-               this.syncWithParent('DELETE', newTotal);
               }
             }
           },
@@ -270,23 +282,13 @@ export class AgGridComponentComponent {
               alert(errorMessage);
             }
           });
-         
+        } else {
+          // Handle the case where userId is null
+          console.error("User ID is missing, cannot perform deletion.");
+          alert(' User ID is missing , cannot delete ');
         }
 
-        private syncWithParent(source:string, totalFare:number) {
-          console.log(`Syncing with parent (${source})`);
-  
-          // Emit journey changes
-          this.journeysChange.emit([...this.journeys]);
-          
-          // Emit total fare - try multiple strategies
-          //const total = this.getTotalFare();
-          this.totalFare.emit(totalFare);
-          
-          // Also try with setTimeout for reliability
-          setTimeout(() => {
-            this.totalFare.emit(totalFare);
-          }, 0);
+         
         }
  
 
